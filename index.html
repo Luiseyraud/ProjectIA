@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Moteur de Jeu - Mouvement Fluide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #222;
+            color: white;
+        }
+
+        canvas {
+            background-color: #333;
+            border: 2px solid #fff;
+            box-shadow: 0 0 10px #000;
+            margin-top: 20px;
+        }
+
+        .controles {
+            margin-top: 20px;
+        }
+
+        input {
+            width: 60px;
+            padding: 5px;
+        }
+
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <canvas id="ecranJeu" width="600" height="600"></canvas>
+
+    <script>
+        const canvas = document.getElementById("ecranJeu");
+        const ctx = canvas.getContext("2d");
+        const ws = new WebSocket('ws://localhost:8000');
+
+        // On garde une trace des touches pour éviter d'envoyer la commande en boucle
+        // quand on reste appuyé (le système d'exploitation répète parfois la frappe)
+        const touches_enfoncees = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
+
+        // Table de correspondance pour le serveur
+        const mapping = {
+            ArrowUp: "HAUT",
+            ArrowDown: "BAS",
+            ArrowLeft: "GAUCHE",
+            ArrowRight: "DROITE"
+        };
+
+        ws.onmessage = function (event) {
+            let etat = JSON.parse(event.data);
+
+            if (canvas.width !== etat.w || canvas.height !== etat.h) {
+                canvas.width = etat.w;
+                canvas.height = etat.h;
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff4757"; // Un joli rouge
+            ctx.beginPath();
+            ctx.arc(etat.x, etat.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+        };
+
+        // QUAND ON ENFONCE LA TOUCHE
+        document.addEventListener('keydown', function (event) {
+            if (touches_enfoncees.hasOwnProperty(event.code)) {
+                event.preventDefault(); // Empêche le défilement de la page web
+
+                // Si la touche n'était pas déjà enregistrée comme "enfoncée"
+                if (!touches_enfoncees[event.code]) {
+                    touches_enfoncees[event.code] = true;
+                    ws.send("+" + mapping[event.code]); // Ex: "+HAUT"
+                }
+            }
+        });
+
+        // QUAND ON RELÂCHE LA TOUCHE
+        document.addEventListener('keyup', function (event) {
+            if (touches_enfoncees.hasOwnProperty(event.code)) {
+                event.preventDefault();
+                touches_enfoncees[event.code] = false;
+                ws.send("-" + mapping[event.code]); // Ex: "-HAUT"
+            }
+        });
+
+        ws.onopen = function () {
+            ws.send("INIT");
+        };
+    </script>
+</body>
+
+</html>
