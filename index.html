@@ -37,6 +37,12 @@
 
 <body>
 
+    <div class="controles">
+        <label>Largeur : <input type="number" id="inputLargeur" value="600"></label>
+        <label>Hauteur : <input type="number" id="inputHauteur" value="600"></label>
+        <button onclick="changerTaille()">Mettre à jour la grille</button>
+    </div>
+
     <canvas id="ecranJeu" width="600" height="600"></canvas>
 
     <script>
@@ -60,7 +66,6 @@
             ArrowLeft: "GAUCHE",
             ArrowRight: "DROITE"
         };
-
         ws.onmessage = function (event) {
             let etat = JSON.parse(event.data);
 
@@ -69,10 +74,19 @@
                 canvas.height = etat.h;
             }
 
+            // CORRECTION : On efface l'ancienne image !
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#ff4757"; // Un joli rouge
+
+            // 1. Dessiner le joueur (Rouge)
+            ctx.fillStyle = "#ff4757";
             ctx.beginPath();
             ctx.arc(etat.x, etat.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 2. Dessiner le bot (Bleu)
+            ctx.fillStyle = "#1e90ff";
+            ctx.beginPath();
+            ctx.arc(etat.bx, etat.by, 10, 0, Math.PI * 2);
             ctx.fill();
         };
 
@@ -97,6 +111,12 @@
                 ws.send("-" + mapping[event.code]); // Ex: "-HAUT"
             }
         });
+
+        function changerTaille() {
+            let l = document.getElementById("inputLargeur").value;
+            let h = document.getElementById("inputHauteur").value;
+            ws.send("RESIZE " + l + " " + h);
+        }
 
         ws.onopen = function () {
             ws.send("INIT");
