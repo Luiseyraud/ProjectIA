@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdio.h> // Ajouté pour le printf de démarrage
+#include <math.h>
 
 int main(void)
 {
@@ -33,33 +34,60 @@ int main(void)
 
         // LA BOUCLE DE JEU (60 FPS)
         if (temps_actuel - temps_precedent >= 16)
-        {
+        {   
+            bot_panique = 0;
             temps_precedent = temps_actuel;
-
-            // --- A. LE CERVEAU DU BOT (Toutes les secondes) ---
-            if (temps_actuel - temps_precedent_bot >= 1000)
+            if (sqrt((joueur_x-bot_x)*(joueur_x-bot_x) + (joueur_y-bot_y)*(joueur_y-bot_y)) <= 150)
             {
-                temps_precedent_bot = temps_actuel;
-                bot_vx = (rand() % 5) - 2;
-                bot_vy = (rand() % 5) - 2;
+
+
+                //A FAIRE A FAIRE A FAIRE A FAIRE A FAIRE A FAIRE A FAIRE 
+                    //le bot panique
+                    bot_panique = 1;
+                        int cx, cy;
+                        int gx = bot_x / TILE_SIZE;
+                        int gy = bot_y / TILE_SIZE;
+
+                        trouver_safe_place(gx, gy, &cx, &cy);
+                        
+                        // L'algorithme A* calcule le chemin et modifie bot_vx / bot_vy
+                        algorithme_a_etoile(gx, gy, cx, cy);
+
+                        bot_x += bot_vx;
+                        bot_y += bot_vy;
+                        bot_panique = 1;
+                    
+                
             }
+            else
+            {
+                //le bot est calme 
+                bot_panique = 0;
+                // --- A. LE CERVEAU DU BOT (Toutes les secondes) ---
+                if (temps_actuel - temps_precedent_bot >= 1000)
+                {
+                    temps_precedent_bot = temps_actuel;
+                    bot_vx = (rand() % 5) - 2;
+                    bot_vy = (rand() % 5) - 2;
+                }
 
-            // --- B. LES JAMBES DU BOT (Déplacement avec Rebond) ---
-            int bot_futur_x = bot_x + bot_vx;
-            int bot_futur_y = bot_y + bot_vy;
+                // --- B. LES JAMBES DU BOT (Déplacement avec Rebond) ---
+                int bot_futur_x = bot_x + bot_vx;
+                int bot_futur_y = bot_y + bot_vy;
 
-            // On teste d'abord l'axe X (est_en_collision est dans jeu.c)
-            if (est_en_collision(bot_futur_x, bot_y) == 1) {
-                bot_vx = -bot_vx; 
-            } else {
-                bot_x = bot_futur_x; 
-            }
+                // On teste d'abord l'axe X (est_en_collision est dans jeu.c)
+                if (est_en_collision("bot",bot_futur_x, bot_y) == 1 ) {
+                    bot_vx = -bot_vx; 
+                } else {
+                    bot_x = bot_futur_x; 
+                }
 
-            // On teste ensuite l'axe Y
-            if (est_en_collision(bot_x, bot_futur_y) == 1) {
-                bot_vy = -bot_vy; 
-            } else {
-                bot_y = bot_futur_y;
+                // On teste ensuite l'axe Y
+                if (est_en_collision("bot", bot_x, bot_futur_y) == 1 ) {
+                    bot_vy = -bot_vy; 
+                } else {
+                    bot_y = bot_futur_y;
+                }
             }
 
             // --- C. MOUVEMENT DU JOUEUR (avec Glissement) ---
@@ -73,12 +101,12 @@ int main(void)
             if (move_droite)  futur_x += vitesse;
 
             // Test X (Glissement)
-            if (est_en_collision(futur_x, joueur_y) == 0) {
+            if (est_en_collision("joueur", futur_x, joueur_y) == 0) {
                 joueur_x = futur_x; 
             }
 
             // Test Y (Glissement)
-            if (est_en_collision(joueur_x, futur_y) == 0) {
+            if (est_en_collision("joueur", joueur_x, futur_y) == 0) {
                 joueur_y = futur_y; 
             }
 
