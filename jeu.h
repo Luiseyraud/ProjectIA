@@ -19,8 +19,16 @@ extern int bot_x;
 extern int bot_y;
 extern int bot_vx;
 extern int bot_vy;
+extern int vitesse_bot;
+extern int bot_panique;
+
+
 
 // --- Prototypes des fonctions liées au jeu ---
-int est_en_collision(int x, int y);
+int est_en_collision(char * user, int x, int y);
+int calculer_distance(int x1, int y1, int x2, int y2);
+void trouver_safe_place(int bot_grille_x, int bot_grille_y, int *cible_x, int *cible_y);
+void algorithme_a_etoile(int start_x, int start_y, int dest_x, int dest_y);
+
 
 #endif // JEU_H
