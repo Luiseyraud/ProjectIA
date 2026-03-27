@@ -30,8 +30,8 @@ void envoyer_etat_jeu(struct mg_connection *c) {
     char reponse[256];
     // On ajoute "bx" et "by" au format JSON
     snprintf(reponse, sizeof(reponse),
-         "{\"type\": \"state\", \"x\": %d, \"y\": %d, \"bx\": %d, \"by\": %d, \"w\": %d, \"h\": %d}",
-         joueur_x, joueur_y, bot_x, bot_y, grille_largeur, grille_hauteur);
+         "{\"type\": \"state\", \"x\": %d, \"y\": %d, \"bx\": %d, \"by\": %d, \"w\": %d, \"h\": %d, \"bp\":%d}",
+         joueur_x, joueur_y, bot_x, bot_y, grille_largeur, grille_hauteur, bot_panique);
 
     mg_ws_send(c, reponse, strlen(reponse), WEBSOCKET_OP_TEXT);
 }
